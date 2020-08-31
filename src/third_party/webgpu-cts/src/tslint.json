@@ -1,0 +1,38 @@
+{
+  "extends": "gts/tslint.json",
+  "rules": {
+    "ban": [
+      true,
+      {
+        "name": "setTimeout",
+        "message": "WPT (Web Platform Tests) doesn't allow setTimeout."
+      }
+    ],
+    "linebreak-style": [
+      true,
+      "LF"
+    ],
+    "no-console": [
+      true
+    ],
+    "ordered-imports": [
+      true,
+      {
+        "grouped-imports": true,
+        "named-imports-order": "lowercase-last"
+      }
+    ],
+    "typedef": [
+      true,
+      "call-signature",
+      "parameter",
+      "property-declaration"
+    ],
+    "no-inferrable-types": false
+  },
+  "linterOptions": {
+    "exclude": [
+      "**/*.json"
+    ]
+  }
+}
