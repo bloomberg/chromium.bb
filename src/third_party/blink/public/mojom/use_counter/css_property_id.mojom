@@ -707,6 +707,19 @@ enum CSSSampleId {
     kContentVisibility = 662,
     kTextDecorationThickness = 663,
     kPageOrientation = 664,
+
+
+
+    // patch section: rubberband (features 665,666,667)
+
+
+    // patch section: lcd-text background (feature 668)
+
+
+    // patch section: suppress-needs-compositing-input-update (feature 669)
+
+
+
     // 1. Add new features above this line (don't change the assigned numbers of
     //    the existing items).
     // 2. Run the src/tools/metrics/histograms/update_use_counter_css.py script
