@@ -1,0 +1,1235 @@
+// Copyright 2017 The Wuffs Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+use "std/lzw"
+
+pub status "#bad block"
+pub status "#bad extension label"
+pub status "#bad frame size"
+pub status "#bad graphic control"
+pub status "#bad header"
+pub status "#bad literal width"
+pub status "#bad palette"
+
+pri status "#internal error: inconsistent ri/wi"
+
+// TODO: replace the placeholder 1 value with either 0 or 0xFFFF (plus
+// lzw.decoder_workbuf_len_max_incl_worst_case), depending on whether we'll
+// need a per-pixel-row workbuf.
+pub const decoder_workbuf_len_max_incl_worst_case base.u64 = 1
+
+// --------
+
+// Quirks are discussed in (/doc/note/quirks.md).
+//
+// The base38 encoding of "gif " is 0xF8586.
+
+// When this quirk is enabled, when skipping over frames, the number of frames
+// visited isn't incremented when the last byte of the N'th frame is seen.
+// Instead, it is incremented when the first byte of the N+1'th frame's header
+// is seen. There may be zero or more GIF extensions between the N'th frame's
+// payload and the N+1'th frame's header.
+//
+// For a well-formed GIF, this won't have much effect. For a malformed GIF,
+// this can affect the number of valid frames, if there is an error detected in
+// the extensions between one frame's payload and the next frame's header.
+//
+// Some other GIF decoders don't register the N'th frame as complete until they
+// see the N+1'th frame's header (or the end-of-animation terminator), so that
+// e.g. the API for visiting the N'th frame can also return whether it's the
+// final frame. Enabling this quirk allows for matching that behavior.
+pub const quirk_delay_num_decoded_frames base.u32 = (0xF8586 << 10) | 0
+
+// When this quirk is enabled, the background color of the first frame is set
+// to black whenever that first frame has a local (frame-specific) palette.
+// That black can be either opaque black or transparent black, depending on
+// whether or not that first frame is opaque: whether that local palette
+// contains a transparent color.
+//
+// This has no effect unless quirk_honor_background_color is also enabled.
+//
+// There isn't really much of a rationale for this, other than it matches the
+// behavior of another GIF implementation.
+pub const quirk_first_frame_local_palette_means_black_background base.u32 = (0xF8586 << 10) | 1
+
+// When this quirk is enabled, the background color is taken from the GIF
+// instead of always being transparent black. If the background color index in
+// the GIF header is non-zero but less than the global palette's size, the
+// global background color is that global palette's entry. Otherwise, it is
+// opaque black. A frame's background color is transparent if the frame palette
+// contains a transparent color. Otherwise, it is the global background color.
+// Note that different frames can have different background colors.
+//
+// Specifically, if the initial frame bounds is smaller than the image bounds,
+// those pixels outside the initial frame bounds are assumed to start as that
+// frame background color. The frame background color should also be used when
+// processing WUFFS_BASE__ANIMATION_DISPOSAL__RESTORE_BACKGROUND. In both
+// cases, the caller of Wuffs, not Wuffs itself, is responsible for filling the
+// pixel buffer with that color.
+pub const quirk_honor_background_color base.u32 = (0xF8586 << 10) | 2
+
+// When this quirk is enabled, silently ignore e.g. a frame that reports a
+// width and height of 6 pixels each, followed by 50 pixel values. In that
+// case, we process the first 36 pixel values and discard the excess 14.
+pub const quirk_ignore_too_much_pixel_data base.u32 = (0xF8586 << 10) | 3
+
+// When this quirk is enabled, if the initial frame bounds extends beyond the
+// image bounds, then the image bounds stay unchanged. By default (with this
+// quirk disabled), the image bounds are adjusted to always contain the first
+// frame's bounds (but not necessarily subsequent frame's bounds).
+//
+// For more discussion, see
+// https://github.com/google/wuffs/blob/master/test/data/artificial/gif-frame-out-of-bounds.gif.make-artificial.txt
+pub const quirk_image_bounds_are_strict base.u32 = (0xF8586 << 10) | 4
+
+// When this quirk is enabled, a frame with zero width or height is rejected
+// during decode_frame (but accepted during decode_frame_config).
+pub const quirk_reject_empty_frame base.u32 = (0xF8586 << 10) | 5
+
+// When this quirk is enabled, a frame with no explicit palette is rejected,
+// instead of implicitly having a palette with every entry being opaque black.
+pub const quirk_reject_empty_palette base.u32 = (0xF8586 << 10) | 6
+
+// --------
+
+// See the spec appendix E "Interlaced Images" on page 29. The first element
+// represents either that the frame was non-interlaced, or that all interlace
+// stages are complete. Otherwise, the four interlace stages are elements 4, 3,
+// 2 and 1 in descending order. For example, the start and delta for the first
+// interlace stage is 0 and 8, for the second interlace stage is 4 and 8, etc.
+// For interlaced frames, the decoder.interlace field starts at 4 and is
+// decremented towards 0.
+//
+// interlace_start[0] is a special case. For non-interlaced frames, that
+// element is never accessed. For interlaced frames, that element is only
+// accessed after all interlace stages are complete. Being the maximum base.u32
+// value means that, after all interlace stages are complete, dst_y will be set
+// to that maximum value (and therefore outside the frame rect).
+pri const interlace_start array[5] base.u32 = [0xFFFFFFFF, 1, 2, 4, 0]
+pri const interlace_delta array[5] base.u8 = [1, 2, 4, 8, 8]
+pri const interlace_count array[5] base.u8 = [0, 1, 2, 4, 8]
+
+pub struct decoder?(
+	width  : base.u32,
+	height : base.u32,
+
+	// Call sequence states:
+	//  - 0: initial state.
+	//  - 1: metadata reported; image config decode is in progress.
+	//  - 2: metadata finished; image config decode is in progress.
+	//  - 3: image config decoded, including the first frame's bounds, but not
+	//       the first frame's pixels.
+	//  - 4: frame config decoded.
+	//  - 5: frame decoded.
+	//
+	// State transitions:
+	//
+	//  - 0 -> 1: via IC (metadata reported)
+	//  - 0 -> 3: via IC (metadata not reported)
+	//  - 0 -> 4: via FC with implicit IC
+	//  - 0 -> 5: via F  with implicit IC and FC
+	//
+	//  - 1 -> 2: via AMC
+	//
+	//  - 2 -> 1: via IC (metadata reported)
+	//  - 2 -> 3: via IC (metadata not reported)
+	//
+	//  - 3 -> 4: via FC
+	//  - 3 -> 5: via F  with implicit FC
+	//
+	//  - 4 -> 4: via FC with implicit F
+	//  - 4 -> 5: via F
+	//
+	//  - 5 -> 4: via FC
+	//  - 5 -> 5: via F  with implicit FC
+	//
+	// Where:
+	//  - AMC is ack_metadata_chunk
+	//  - F   is decode_frame,        implicit means skip_frame
+	//  - FC  is decode_frame_config, implicit means nullptr args.dst
+	//  - IC  is decode_image_config, implicit means nullptr args.dst
+	call_sequence : base.u8,
+
+	ignore_metadata             : base.bool,
+	report_metadata_iccp        : base.bool,
+	report_metadata_xmp         : base.bool,
+	metadata_fourcc_value       : base.u32,
+	metadata_chunk_length_value : base.u64,
+	metadata_io_position        : base.u64,
+
+	quirk_enabled_delay_num_decoded_frames                         : base.bool,
+	quirk_enabled_first_frame_local_palette_means_black_background : base.bool,
+	quirk_enabled_honor_background_color                           : base.bool,
+	quirk_enabled_ignore_too_much_pixel_data                       : base.bool,
+	quirk_enabled_image_bounds_are_strict                          : base.bool,
+	quirk_enabled_reject_empty_frame                               : base.bool,
+	quirk_enabled_reject_empty_palette                             : base.bool,
+
+	delayed_num_decoded_frames         : base.bool,
+	end_of_data                        : base.bool,
+	restarted                          : base.bool,
+	previous_lzw_decode_ended_abruptly : base.bool,
+
+	has_global_palette : base.bool,
+
+	// interlace indexes the interlace_start and interlace_delta arrays.
+	interlace : base.u8[..= 4],
+
+	// Absent an ANIMEXTS1.0 or NETSCAPE2.0 extension, the implicit number of
+	// animation loops is 1.
+	seen_num_loops : base.bool,
+	num_loops      : base.u32,
+
+	background_color_u32_argb_premul : base.u32,
+	black_color_u32_argb_premul      : base.u32,
+
+	gc_has_transparent_index : base.bool,
+	gc_transparent_index     : base.u8,
+	gc_disposal              : base.u8,
+	// There are 7056000 flicks per centisecond.
+	gc_duration : base.u64[..= 0xFFFF * 7056000],
+
+	frame_config_io_position        : base.u64,
+	num_decoded_frame_configs_value : base.u64,
+	num_decoded_frames_value        : base.u64,
+
+	frame_rect_x0 : base.u32,
+	frame_rect_y0 : base.u32,
+	frame_rect_x1 : base.u32,
+	frame_rect_y1 : base.u32,
+
+	// The dst_etc fields are the output cursor during copy_to_image_buffer.
+	dst_x            : base.u32,
+	dst_y            : base.u32,
+	dirty_max_excl_y : base.u32,
+
+	// Indexes into the compressed array, defined below.
+	compressed_ri : base.u64,
+	compressed_wi : base.u64,
+
+	swizzler : base.pixel_swizzler,
+	util     : base.utility,
+)(
+	compressed : array[4096] base.u8,
+
+	// palettes[0] and palettes[1] are the Global and Local Color Table.
+	palettes : array[2] array[4 * 256] base.u8,
+	// dst_palette is the swizzled color table.
+	dst_palette : array[4 * 256] base.u8,
+
+	lzw : lzw.decoder,
+)
+
+pub func decoder.set_quirk_enabled!(quirk: base.u32, enabled: base.bool) {
+	if this.call_sequence == 0 {
+		if args.quirk == quirk_delay_num_decoded_frames {
+			this.quirk_enabled_delay_num_decoded_frames = args.enabled
+		} else if args.quirk == quirk_first_frame_local_palette_means_black_background {
+			this.quirk_enabled_first_frame_local_palette_means_black_background = args.enabled
+		} else if args.quirk == quirk_honor_background_color {
+			this.quirk_enabled_honor_background_color = args.enabled
+		} else if args.quirk == quirk_ignore_too_much_pixel_data {
+			this.quirk_enabled_ignore_too_much_pixel_data = args.enabled
+		} else if args.quirk == quirk_image_bounds_are_strict {
+			this.quirk_enabled_image_bounds_are_strict = args.enabled
+		} else if args.quirk == quirk_reject_empty_frame {
+			this.quirk_enabled_reject_empty_frame = args.enabled
+		} else if args.quirk == quirk_reject_empty_palette {
+			this.quirk_enabled_reject_empty_palette = args.enabled
+		}
+	}
+}
+
+pub func decoder.decode_image_config?(dst: nptr base.image_config, src: base.io_reader) {
+	var ffio : base.bool
+
+	if this.call_sequence == 0 {
+		this.decode_header?(src: args.src)
+		this.decode_lsd?(src: args.src)
+	} else if this.call_sequence <> 2 {
+		return base."#bad call sequence"
+	}
+
+	this.decode_up_to_id_part1?(src: args.src)
+
+	// TODO: if this.end_of_data, return an error and/or set dst to zero?
+
+	ffio = not this.gc_has_transparent_index
+	if not this.quirk_enabled_honor_background_color {
+		ffio = ffio and
+			(this.frame_rect_x0 == 0) and
+			(this.frame_rect_y0 == 0) and
+			(this.frame_rect_x1 == this.width) and
+			(this.frame_rect_y1 == this.height)
+	} else if ffio {
+		// Use opaque black, not transparent black.
+		this.black_color_u32_argb_premul = 0xFF000000
+	}
+
+	if this.background_color_u32_argb_premul == 77 {
+		this.background_color_u32_argb_premul = this.black_color_u32_argb_premul
+	}
+
+	if args.dst <> nullptr {
+		// TODO: a Wuffs (not just C) name for the
+		// WUFFS_BASE__PIXEL_FORMAT__INDEXED__BGRA_BINARY magic pixfmt constant.
+		args.dst.set!(
+			pixfmt: 0x47040008,
+			pixsub: 0,
+			width: this.width,
+			height: this.height,
+			first_frame_io_position: this.frame_config_io_position,
+			first_frame_is_opaque: ffio)
+	}
+
+	this.call_sequence = 3
+}
+
+pub func decoder.set_report_metadata!(fourcc: base.u32, report: base.bool) {
+	if args.fourcc == 0x49434350 {  // "ICCP"
+		this.report_metadata_iccp = args.report
+	} else if args.fourcc == 0x584D5020 {  // "XMP "
+		this.report_metadata_xmp = args.report
+	}
+}
+
+pub func decoder.ack_metadata_chunk?(src: base.io_reader) {
+	if this.call_sequence <> 1 {
+		return base."#bad call sequence"
+	}
+	if args.src.position() <> this.metadata_io_position {
+		return base."#bad I/O position"
+	}
+
+	if this.metadata_chunk_length_value > 0 {
+		while args.src.available() <= 0,
+			post args.src.available() > 0,
+		{
+			yield? base."$short read"
+		}
+
+		this.metadata_chunk_length_value = args.src.peek_u8_as_u64()
+		if this.metadata_chunk_length_value > 0 {
+			if this.metadata_fourcc_value == 0x584D5020 {  // "XMP "
+				// The +1 is because XMP metadata's encoding includes each
+				// block's leading byte (the block size) as part of the
+				// metadata passed to the caller.
+				this.metadata_chunk_length_value += 1
+			} else {
+				args.src.skip_fast!(actual: 1, worst_case: 1)
+			}
+			this.metadata_io_position =
+				args.src.position() ~sat+ this.metadata_chunk_length_value
+			return base."@metadata reported"
+		}
+
+		// Consume the '\x00' that means a zero-length block.
+		args.src.skip_fast!(actual: 1, worst_case: 1)
+	}
+
+	this.call_sequence = 2
+	this.metadata_fourcc_value = 0
+	this.metadata_io_position = 0
+	return ok
+}
+
+pub func decoder.metadata_fourcc() base.u32 {
+	return this.metadata_fourcc_value
+}
+
+pub func decoder.metadata_chunk_length() base.u64 {
+	return this.metadata_chunk_length_value
+}
+
+pub func decoder.num_animation_loops() base.u32 {
+	if this.seen_num_loops {
+		return this.num_loops
+	}
+	return 1
+}
+
+pub func decoder.num_decoded_frame_configs() base.u64 {
+	return this.num_decoded_frame_configs_value
+}
+
+pub func decoder.num_decoded_frames() base.u64 {
+	return this.num_decoded_frames_value
+}
+
+pub func decoder.frame_dirty_rect() base.rect_ie_u32 {
+	// The "foo.min(a:this.width_or_height)" calls clip the nominal frame_rect
+	// to the image_rect.
+	return this.util.make_rect_ie_u32(
+		min_incl_x: this.frame_rect_x0.min(a: this.width),
+		min_incl_y: this.frame_rect_y0.min(a: this.height),
+		max_excl_x: this.frame_rect_x1.min(a: this.width),
+		max_excl_y: this.dirty_max_excl_y.min(a: this.height))
+}
+
+pub func decoder.workbuf_len() base.range_ii_u64 {
+	return this.util.make_range_ii_u64(
+		min_incl: decoder_workbuf_len_max_incl_worst_case,
+		max_incl: decoder_workbuf_len_max_incl_worst_case)
+}
+
+pub func decoder.restart_frame!(index: base.u64, io_position: base.u64) base.status {
+	if this.call_sequence == 0 {
+		return base."#bad call sequence"
+	}
+	this.delayed_num_decoded_frames = false
+	this.end_of_data = false
+	this.restarted = true
+	this.frame_config_io_position = args.io_position
+	this.num_decoded_frame_configs_value = args.index
+	this.num_decoded_frames_value = args.index
+	this.reset_gc!()
+	return ok
+}
+
+pub func decoder.decode_frame_config?(dst: nptr base.frame_config, src: base.io_reader) {
+	var blend            : base.u8
+	var background_color : base.u32
+	var flags            : base.u8
+
+	this.ignore_metadata = true
+	this.dirty_max_excl_y = 0
+
+	if not this.end_of_data {
+		if this.call_sequence == 0 {
+			this.decode_image_config?(dst: nullptr, src: args.src)
+		} else if this.call_sequence <> 3 {
+			if this.call_sequence == 4 {
+				this.skip_frame?(src: args.src)
+			}
+			this.decode_up_to_id_part1?(src: args.src)
+		}
+	}
+
+	// This is a new "if", not an "else", because the calls above can modify
+	// this.end_of_data.
+	if this.end_of_data {
+		return base."@end of data"
+	}
+
+	blend = 0
+	background_color = this.black_color_u32_argb_premul
+	if not this.gc_has_transparent_index {
+		blend = 2  // 2 is WUFFS_BASE__ANIMATION_BLEND__OPAQUE.
+		background_color = this.background_color_u32_argb_premul
+
+		// If the quirk is enabled and the first frame has a local color
+		// palette, its background color is black.
+		if this.quirk_enabled_first_frame_local_palette_means_black_background and
+			(this.num_decoded_frame_configs_value == 0) {
+
+			while args.src.available() <= 0,
+				post args.src.available() > 0,
+			{
+				yield? base."$short read"
+			}
+			flags = args.src.peek_u8()
+			if (flags & 0x80) <> 0 {
+				background_color = this.black_color_u32_argb_premul
+			}
+		}
+	}
+
+	if args.dst <> nullptr {
+		// The "foo.min(x:this.width_or_height)" calls clip the nominal
+		// frame_rect to the image_rect. The "x" argument name doesn't
+		// necessarily mean "the x direction". It's just that, in Wuffs, every
+		// function call argument needs a name, and for the min function, "x"
+		// is as good a name as any other.
+		args.dst.update!(bounds: this.util.make_rect_ie_u32(
+			min_incl_x: this.frame_rect_x0.min(a: this.width),
+			min_incl_y: this.frame_rect_y0.min(a: this.height),
+			max_excl_x: this.frame_rect_x1.min(a: this.width),
+			max_excl_y: this.frame_rect_y1.min(a: this.height)),
+			duration: this.gc_duration,
+			index: this.num_decoded_frame_configs_value,
+			io_position: this.frame_config_io_position,
+			blend: blend,
+			disposal: this.gc_disposal,
+			background_color: background_color)
+	}
+
+	this.num_decoded_frame_configs_value ~sat+= 1
+	this.call_sequence = 4
+}
+
+pri func decoder.skip_frame?(src: base.io_reader) {
+	var flags : base.u8
+	var lw    : base.u8
+
+	// Skip the optional Local Color Table, 3 bytes (RGB) per entry.
+	flags = args.src.read_u8?()
+	if (flags & 0x80) <> 0 {
+		args.src.skip?(n: (3 as base.u32) << (1 + (flags & 0x07)))
+	}
+
+	// Process the LZW literal width.
+	lw = args.src.read_u8?()
+	if lw > 8 {
+		return "#bad literal width"
+	}
+
+	// Skip the blocks of LZW-compressed data.
+	this.skip_blocks?(src: args.src)
+
+	if this.quirk_enabled_delay_num_decoded_frames {
+		this.delayed_num_decoded_frames = true
+	} else {
+		this.num_decoded_frames_value ~sat+= 1
+	}
+	this.reset_gc!()
+}
+
+// TODO: honor args.opts.
+pub func decoder.decode_frame?(dst: ptr base.pixel_buffer, src: base.io_reader, workbuf: slice base.u8, opts: nptr base.decode_frame_options) {
+	this.ignore_metadata = true
+	if this.call_sequence <> 4 {
+		this.decode_frame_config?(dst: nullptr, src: args.src)
+	}
+	if this.quirk_enabled_reject_empty_frame and
+		((this.frame_rect_x0 == this.frame_rect_x1) or (this.frame_rect_y0 == this.frame_rect_y1)) {
+		return "#bad frame size"
+	}
+	this.decode_id_part1?(dst: args.dst, src: args.src)
+	this.decode_id_part2?(dst: args.dst, src: args.src, workbuf: args.workbuf)
+
+	this.num_decoded_frames_value ~sat+= 1
+	this.reset_gc!()
+}
+
+pri func decoder.reset_gc!() {
+	this.call_sequence = 5
+	// The Image Descriptor is mandatory, but the Graphic Control extension is
+	// optional. Reset the GC related fields for the next decode_frame call.
+	this.gc_has_transparent_index = false
+	this.gc_transparent_index = 0
+	this.gc_disposal = 0
+	this.gc_duration = 0
+}
+
+pri func decoder.decode_up_to_id_part1?(src: base.io_reader) {
+	var block_type : base.u8
+
+	if not this.restarted {
+		if this.call_sequence <> 2 {
+			this.frame_config_io_position = args.src.position()
+		}
+	} else if this.frame_config_io_position <> args.src.position() {
+		return base."#bad restart"
+	} else {
+		this.restarted = false
+	}
+
+	while true {
+		block_type = args.src.read_u8?()
+		if block_type == 0x21 {  // The spec calls 0x21 the "Extension Introducer".
+			this.decode_extension?(src: args.src)
+		} else if block_type == 0x2C {  // The spec calls 0x2C the "Image Separator".
+			if this.delayed_num_decoded_frames {
+				this.delayed_num_decoded_frames = false
+				this.num_decoded_frames_value ~sat+= 1
+			}
+			this.decode_id_part0?(src: args.src)
+			break
+		} else if block_type == 0x3B {  // The spec calls 0x3B the "Trailer".
+			if this.delayed_num_decoded_frames {
+				this.delayed_num_decoded_frames = false
+				this.num_decoded_frames_value ~sat+= 1
+			}
+			this.end_of_data = true
+			break
+		} else {
+			return "#bad block"
+		}
+	}
+}
+
+// decode_header reads either "GIF87a" or "GIF89a".
+//
+// See the spec section 17 "Header" on page 7.
+pri func decoder.decode_header?(src: base.io_reader) {
+	var c : array[6] base.u8
+	var i : base.u32
+
+	while i < 6 {
+		c[i] = args.src.read_u8?()
+		i += 1
+	}
+	if (c[0] <> 0x47) or (c[1] <> 0x49) or (c[2] <> 0x46) or (c[3] <> 0x38) or
+		((c[4] <> 0x37) and (c[4] <> 0x39)) or (c[5] <> 0x61) {
+		return "#bad header"
+	}
+}
+
+// decode_lsd reads the Logical Screen Descriptor.
+//
+// See the spec section 18 "Logical Screen Descriptor" on page 8.
+pri func decoder.decode_lsd?(src: base.io_reader) {
+	var flags                  : base.u8
+	var background_color_index : base.u8
+	var num_palette_entries    : base.u32[..= 256]
+	var i                      : base.u32
+	var j                      : base.u32[..= 1020]
+	var argb                   : base.u32
+
+	this.width = args.src.read_u16le_as_u32?()
+	this.height = args.src.read_u16le_as_u32?()
+	flags = args.src.read_u8?()
+	background_color_index = args.src.read_u8?()
+	// Ignore the Pixel Aspect Ratio byte.
+	args.src.skip?(n: 1)
+
+	// Read the optional Global Color Table.
+	i = 0
+	this.has_global_palette = (flags & 0x80) <> 0
+	if this.has_global_palette {
+		num_palette_entries = (1 as base.u32) << (1 + (flags & 0x07))
+		while i < num_palette_entries {
+			assert i < 256 via "a < b: a < c; c <= b"(c: num_palette_entries)
+			// Convert from RGB (in memory order) to ARGB (in native u32 order)
+			// to BGRA (in memory order).
+			argb = args.src.read_u24be_as_u32?()
+			argb |= 0xFF000000
+			this.palettes[0][(4 * i) + 0] = ((argb >> 0) & 0xFF) as base.u8
+			this.palettes[0][(4 * i) + 1] = ((argb >> 8) & 0xFF) as base.u8
+			this.palettes[0][(4 * i) + 2] = ((argb >> 16) & 0xFF) as base.u8
+			this.palettes[0][(4 * i) + 3] = ((argb >> 24) & 0xFF) as base.u8
+			i += 1
+		}
+
+		if this.quirk_enabled_honor_background_color {
+			if (background_color_index <> 0) and
+				((background_color_index as base.u32) < num_palette_entries) {
+
+				j = 4 * (background_color_index as base.u32)
+				this.background_color_u32_argb_premul =
+					((this.palettes[0][j + 0] as base.u32) << 0) |
+					((this.palettes[0][j + 1] as base.u32) << 8) |
+					((this.palettes[0][j + 2] as base.u32) << 16) |
+					((this.palettes[0][j + 3] as base.u32) << 24)
+			} else {
+				// The background color is either opaque black or transparent
+				// black. We set it to an arbitrary nonsense value (77) for
+				// now, and set it to its real value later, once we know
+				// whether the first frame is opaque (the ffio value).
+				this.background_color_u32_argb_premul = 77
+			}
+		}
+	}
+
+	// Set the remaining palette entries to opaque black.
+	while i < 256 {
+		this.palettes[0][(4 * i) + 0] = 0x00
+		this.palettes[0][(4 * i) + 1] = 0x00
+		this.palettes[0][(4 * i) + 2] = 0x00
+		this.palettes[0][(4 * i) + 3] = 0xFF
+		i += 1
+	}
+}
+
+// decode_extension reads an extension. The Extension Introducer byte has
+// already been read.
+//
+// See the spec:
+//  - section 23 "Graphic Control Extension" on page 15.
+//  - section 24 "Comment Extension" on page 17.
+//  - section 25 "Plain Text Extension" on page 18.
+//  - section 26 "Application Extension" on page 21.
+pri func decoder.decode_extension?(src: base.io_reader) {
+	var label : base.u8
+
+	label = args.src.read_u8?()
+	if label == 0xF9 {  // The spec calls 0xF9 the "Graphic Control Label".
+		this.decode_gc?(src: args.src)
+		return ok
+	} else if label == 0xFF {  // The spec calls 0xFF the "Application Extension Label".
+		this.decode_ae?(src: args.src)
+		return ok
+	}
+	// We skip over all other extensions, including 0x01 "Plain Text Label" and
+	// 0xFE "Comment Label".
+	this.skip_blocks?(src: args.src)
+}
+
+pri func decoder.skip_blocks?(src: base.io_reader) {
+	var block_size : base.u8
+
+	while true {
+		block_size = args.src.read_u8?()
+		if block_size == 0 {
+			return ok
+		}
+		args.src.skip?(n: block_size as base.u32)
+	}
+}
+
+// animexts1dot0 is "ANIMEXTS1.0" as bytes.
+pri const animexts1dot0 array[11] base.u8 = [
+	0x41, 0x4E, 0x49, 0x4D, 0x45, 0x58, 0x54, 0x53, 0x31, 0x2E, 0x30,
+]
+
+// netscape2dot0 is "NETSCAPE2.0" as bytes.
+pri const netscape2dot0 array[11] base.u8 = [
+	0x4E, 0x45, 0x54, 0x53, 0x43, 0x41, 0x50, 0x45, 0x32, 0x2E, 0x30,
+]
+
+// iccrgbg1012 is "ICCRGBG1012" as bytes.
+pri const iccrgbg1012 array[11] base.u8 = [
+	0x49, 0x43, 0x43, 0x52, 0x47, 0x42, 0x47, 0x31, 0x30, 0x31, 0x32,
+]
+
+// xmpdataxmp is "XMP DataXMP" as bytes.
+pri const xmpdataxmp array[11] base.u8 = [
+	0x58, 0x4D, 0x50, 0x20, 0x44, 0x61, 0x74, 0x61, 0x58, 0x4D, 0x50,
+]
+
+// decode_ae reads an Application Extension.
+pri func decoder.decode_ae?(src: base.io_reader) {
+	var c           : base.u8
+	var block_size  : base.u8
+	var is_animexts : base.bool
+	var is_netscape : base.bool
+	var is_iccp     : base.bool
+	var is_xmp      : base.bool
+
+	// This "while true" always executes exactly once, as it ends with a
+	// "break", but using "break"s throughout simplifies the control flow.
+	while true {
+		block_size = args.src.read_u8?()
+		if block_size == 0 {
+			return ok
+		}
+
+		// Look only for an 11 byte "ANIMEXTS1.0", "NETSCAPE2.0" or other
+		// extension, as per:
+		//  - http://www.vurdalakov.net/misc/gif/animexts-looping-application-extension
+		//  - http://www.vurdalakov.net/misc/gif/netscape-looping-application-extension
+		//
+		// Other extensions include XMP metadata.
+		if block_size <> 11 {
+			args.src.skip?(n: block_size as base.u32)
+			break
+		}
+		is_animexts = true
+		is_netscape = true
+		is_iccp = true
+		is_xmp = true
+		block_size = 0  // Re-purpose the block_size variable as a counter.
+		while block_size < 11 {
+			c = args.src.read_u8?()
+			is_animexts = is_animexts and (c == animexts1dot0[block_size])
+			is_netscape = is_netscape and (c == netscape2dot0[block_size])
+			is_iccp = is_iccp and (c == iccrgbg1012[block_size])
+			is_xmp = is_xmp and (c == xmpdataxmp[block_size])
+			block_size += 1
+		}
+
+		if is_animexts or is_netscape {
+			// Those 11 bytes should be followed by 0x03, 0x01 and then the loop
+			// count.
+			block_size = args.src.read_u8?()
+			if block_size <> 3 {
+				args.src.skip?(n: block_size as base.u32)
+				break
+			}
+			c = args.src.read_u8?()
+			if c <> 0x01 {
+				args.src.skip?(n: 2)
+				break
+			}
+			this.num_loops = args.src.read_u16le_as_u32?()
+			this.seen_num_loops = true
+
+			// A loop count of N, in the wire format, actually means "repeat N
+			// times after the first play", if N is positive. A zero N means to
+			// loop forever. Playing the frames exactly once is denoted by the
+			// *absence* of this NETSCAPE2.0 application extension.
+			//
+			// For example, if there are four frames: A, B, C, D, and N is 2, then
+			// each frame is actually played N+1 or 3 times: ABCDABCDABCD.
+			//
+			// Thus, we increment N if it is positive. The comparison against
+			// 0xFFFF will never fail, but is necessary for the overflow checker.
+			if (0 < this.num_loops) and (this.num_loops <= 0xFFFF) {
+				this.num_loops += 1
+			}
+
+		} else if this.ignore_metadata {
+			// No-op.
+
+		} else if is_iccp and this.report_metadata_iccp {
+			while args.src.available() <= 0,
+				post args.src.available() > 0,
+			{
+				yield? base."$short read"
+			}
+			this.metadata_chunk_length_value = args.src.peek_u8_as_u64()
+			args.src.skip_fast!(actual: 1, worst_case: 1)
+			this.metadata_fourcc_value = 0x49434350  // "ICCP"
+			this.metadata_io_position = args.src.position() ~sat+ this.metadata_chunk_length_value
+			this.call_sequence = 1
+			return base."@metadata reported"
+
+		} else if is_xmp and this.report_metadata_xmp {
+			while args.src.available() <= 0,
+				post args.src.available() > 0,
+			{
+				yield? base."$short read"
+			}
+			this.metadata_chunk_length_value = args.src.peek_u8_as_u64()
+			if this.metadata_chunk_length_value > 0 {
+				// The +1 is because XMP metadata's encoding includes each
+				// block's leading byte (the block size) as part of the
+				// metadata passed to the caller.
+				this.metadata_chunk_length_value += 1
+			} else {
+				args.src.skip_fast!(actual: 1, worst_case: 1)
+			}
+			this.metadata_fourcc_value = 0x584D5020  // "XMP "
+			this.metadata_io_position = args.src.position() ~sat+ this.metadata_chunk_length_value
+			this.call_sequence = 1
+			return base."@metadata reported"
+		}
+
+		break
+	}
+	this.skip_blocks?(src: args.src)
+}
+
+// decode_gc reads a Graphic Control.
+pri func decoder.decode_gc?(src: base.io_reader) {
+	var c                        : base.u8
+	var flags                    : base.u8
+	var gc_duration_centiseconds : base.u16
+
+	c = args.src.read_u8?()
+	if c <> 4 {
+		return "#bad graphic control"
+	}
+
+	flags = args.src.read_u8?()
+	this.gc_has_transparent_index = (flags & 0x01) <> 0
+
+	// Convert the disposal method from GIF's wire format to Wuffs constants.
+	//
+	// The GIF spec discusses the 3-bit flag value being 0, 1, 2 or 3. Values
+	// in the range [4 ..= 7] are "to be defined". In practice, some encoders also
+	// use 4 for "restore previous". See
+	// https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/image-decoders/gif/gif_image_reader.cc?rcl=5161173c43324da2b13e1aa45bbe69901daa1279&l=625
+	//
+	// TODO: named constants instead of assigning 1 for
+	// WUFFS_BASE__ANIMATION_DISPOSAL__RESTORE_BACKGROUND, etc.
+	flags = (flags >> 2) & 0x07
+	if flags == 2 {
+		this.gc_disposal = 1  // 1 is WUFFS_BASE__ANIMATION_DISPOSAL__RESTORE_BACKGROUND
+	} else if (flags == 3) or (flags == 4) {
+		this.gc_disposal = 2  // 2 is WUFFS_BASE__ANIMATION_DISPOSAL__RESTORE_PREVIOUS
+	} else {
+		this.gc_disposal = 0
+	}
+
+	// There are 7056000 flicks per centisecond.
+	gc_duration_centiseconds = args.src.read_u16le?()
+	this.gc_duration = (gc_duration_centiseconds as base.u64) * 7056000
+	this.gc_transparent_index = args.src.read_u8?()
+
+	c = args.src.read_u8?()
+	if c <> 0 {
+		return "#bad graphic control"
+	}
+}
+
+// decode_id_partX reads an Image Descriptor. The Image Separator byte has
+// already been read.
+//
+// See the spec section 20 "Image Descriptor" on page 11.
+//
+// The code is split into three parts (part0, part 1 and part12 because
+// determining the overall image's width and height also requires decoding the
+// first frame's bounds (part0), but doesn't require decoding the first frame's
+// pixels (the other two parts). Decoding the actual pixels is split into two
+// (part1 and part2) not out of necessity, just for the general programming
+// principle that smaller functions are easier to understand.
+
+pri func decoder.decode_id_part0?(src: base.io_reader) {
+	this.frame_rect_x0 = args.src.read_u16le_as_u32?()
+	this.frame_rect_y0 = args.src.read_u16le_as_u32?()
+	this.frame_rect_x1 = args.src.read_u16le_as_u32?()
+	this.frame_rect_x1 ~mod+= this.frame_rect_x0
+	this.frame_rect_y1 = args.src.read_u16le_as_u32?()
+	this.frame_rect_y1 ~mod+= this.frame_rect_y0
+	this.dst_x = this.frame_rect_x0
+	this.dst_y = this.frame_rect_y0
+
+	// Set the image's overall width and height to be the maximum of the
+	// nominal image width and height (given in the Logical Screen Descriptor)
+	// and the bottom right extent of the first frame. See
+	// test/data/artificial/gif-frame-out-of-bounds.gif.make-artificial.txt for
+	// more discussion.
+	if (this.call_sequence == 0) and (not this.quirk_enabled_image_bounds_are_strict) {
+		this.width = this.width.max(a: this.frame_rect_x1)
+		this.height = this.height.max(a: this.frame_rect_y1)
+	}
+}
+
+pri func decoder.decode_id_part1?(dst: ptr base.pixel_buffer, src: base.io_reader) {
+	var flags               : base.u8
+	var which_palette       : base.u8[..= 1]
+	var num_palette_entries : base.u32[..= 256]
+	var i                   : base.u32
+	var argb                : base.u32
+	var dst_palette         : slice base.u8
+	var status              : base.status
+	var lw                  : base.u8
+
+	flags = args.src.read_u8?()
+	if (flags & 0x40) <> 0 {
+		this.interlace = 4
+	} else {
+		this.interlace = 0
+	}
+
+	// Read the optional Local Color Table.
+	which_palette = 1
+	if (flags & 0x80) <> 0 {
+		num_palette_entries = (1 as base.u32) << (1 + (flags & 0x07))
+		i = 0
+		while i < num_palette_entries {
+			assert i < 256 via "a < b: a < c; c <= b"(c: num_palette_entries)
+			// Convert from RGB (in memory order) to ARGB (in native u32 order)
+			// to BGRA (in memory order).
+			argb = args.src.read_u24be_as_u32?()
+			argb |= 0xFF000000
+			this.palettes[1][(4 * i) + 0] = ((argb >> 0) & 0xFF) as base.u8
+			this.palettes[1][(4 * i) + 1] = ((argb >> 8) & 0xFF) as base.u8
+			this.palettes[1][(4 * i) + 2] = ((argb >> 16) & 0xFF) as base.u8
+			this.palettes[1][(4 * i) + 3] = ((argb >> 24) & 0xFF) as base.u8
+			i += 1
+		}
+		// Set the remaining palette entries to opaque black.
+		while i < 256 {
+			this.palettes[1][(4 * i) + 0] = 0x00
+			this.palettes[1][(4 * i) + 1] = 0x00
+			this.palettes[1][(4 * i) + 2] = 0x00
+			this.palettes[1][(4 * i) + 3] = 0xFF
+			i += 1
+		}
+	} else if this.quirk_enabled_reject_empty_palette and (not this.has_global_palette) {
+		return "#bad palette"
+	} else if this.gc_has_transparent_index {
+		this.palettes[1][..].copy_from_slice!(s: this.palettes[0][..])
+	} else {
+		which_palette = 0
+	}
+
+	// Set the gc_transparent_index palette entry to transparent black.
+	if this.gc_has_transparent_index {
+		this.palettes[1][(4 * (this.gc_transparent_index as base.u32)) + 0] = 0x00
+		this.palettes[1][(4 * (this.gc_transparent_index as base.u32)) + 1] = 0x00
+		this.palettes[1][(4 * (this.gc_transparent_index as base.u32)) + 2] = 0x00
+		this.palettes[1][(4 * (this.gc_transparent_index as base.u32)) + 3] = 0x00
+	}
+
+	dst_palette = args.dst.palette()
+	if dst_palette.length() == 0 {
+		dst_palette = this.dst_palette[..]
+	}
+
+	// TODO: a Wuffs (not just C) name for the
+	// WUFFS_BASE__PIXEL_FORMAT__INDEXED__BGRA_BINARY magic pixfmt constant.
+	status = this.swizzler.prepare!(
+		dst_pixfmt: args.dst.pixel_format(),
+		dst_palette: dst_palette,
+		src_pixfmt: 0x47040008,
+		src_palette: this.palettes[which_palette][..])
+	if not status.is_ok() {
+		return status
+	}
+
+	// Other GIF implementations accept GIF files that aren't completely spec
+	// compliant. For example, the test/data/gifplayer-muybridge.gif file
+	// (created by the gifsicle program) is accepted by other GIF decoders.
+	// However, in that file, frame #61's embedded LZW data is truncated,
+	// finishing with only 8 of the 9 bits required of the LZW end code. The
+	// end code itself, 0x81, is representable in only 8 bits, but the number
+	// of bits for the decoder to read has ticked over from 8 to 9 just before
+	// that end code is encountered.
+	//
+	// To accommodate such malformed GIFs, we detect when the previous frame's
+	// LZW decoding ended abruptly. The previous LZW decode 'works', in that it
+	// decodes as much pixel data as is available, but without seeing that end
+	// code (i.e. returning the "ok" status code), the LZW decoder is stuck in
+	// a coroutine-in-progress lzw_decoder.decode call, still waiting for that
+	// end code. To cancel that coroutine, we reset the LZW decoder.
+	if this.previous_lzw_decode_ended_abruptly {
+		this.lzw.reset!()
+	}
+
+	// Process the LZW literal width. The spec says that "images which have one
+	// color bit must be indicated as having a code size [i.e. literal width]
+	// of 2", but in practice, some encoders use a literal width of 1 or 0.
+	lw = args.src.read_u8?()
+	if lw > 8 {
+		return "#bad literal width"
+	}
+	this.lzw.set_literal_width!(lw: lw as base.u32)
+
+	this.previous_lzw_decode_ended_abruptly = true
+}
+
+pri func decoder.decode_id_part2?(dst: ptr base.pixel_buffer, src: base.io_reader, workbuf: slice base.u8) {
+	var block_size      : base.u64[..= 255]
+	var need_block_size : base.bool
+	var n_compressed    : base.u64
+	var compressed      : slice base.u8
+	var r               : base.io_reader
+	var mark            : base.u64
+	var lzw_status      : base.status
+	var copy_status     : base.status
+	var uncompressed    : slice base.u8
+
+	need_block_size = true
+	while.outer true {
+		if need_block_size {
+			need_block_size = false
+			block_size = args.src.read_u8_as_u64?()
+		}
+		if block_size == 0 {
+			break
+		}
+		while args.src.available() == 0 {
+			yield? base."$short read"
+		}
+
+		if this.compressed_ri == this.compressed_wi {
+			this.compressed_ri = 0
+			this.compressed_wi = 0
+		}
+		while this.compressed_wi <= (4096 - 255) {
+			n_compressed = block_size.min(a: args.src.available())
+			if n_compressed <= 0 {
+				break
+			}
+			compressed = args.src.take!(n: n_compressed)
+			this.compressed[this.compressed_wi ..].copy_from_slice!(s: compressed)
+			this.compressed_wi ~sat+= n_compressed
+			block_size ~sat-= n_compressed
+			if block_size > 0 {
+				break
+			}
+			if args.src.available() <= 0 {
+				need_block_size = true
+				break
+			}
+			block_size = args.src.peek_u8_as_u64()
+			args.src.skip_fast!(actual: 1, worst_case: 1)
+		}
+
+		if decoder_workbuf_len_max_incl_worst_case > args.workbuf.length() {
+			return base."#bad workbuf length"
+		}
+
+		while.inner true {
+			if (this.compressed_ri > this.compressed_wi) or (this.compressed_wi > 4096) {
+				return "#internal error: inconsistent ri/wi"
+			}
+			io_bind (io: r, data: this.compressed[this.compressed_ri .. this.compressed_wi]) {
+				mark = r.mark()
+				lzw_status =? this.lzw.decode_io_writer?(
+					dst: this.util.empty_io_writer(), src: r, workbuf: this.util.empty_slice_u8())
+				this.compressed_ri ~sat+= r.count_since(mark: mark)
+			}
+
+			uncompressed = this.lzw.flush!()
+			if uncompressed.length() > 0 {
+				copy_status = this.copy_to_image_buffer!(pb: args.dst, src: uncompressed)
+				if copy_status.is_error() {
+					return copy_status
+				}
+			}
+
+			if lzw_status.is_ok() {
+				this.previous_lzw_decode_ended_abruptly = false
+
+				// Skip any trailing blocks.
+				if need_block_size or (block_size > 0) {
+					args.src.skip?(n: block_size as base.u32)
+					this.skip_blocks?(src: args.src)
+				}
+
+				break.outer
+			} else if lzw_status == base."$short read" {
+				continue.outer
+			} else if lzw_status == base."$short write" {
+				continue.inner
+			}
+			return lzw_status
+		}
+	}
+
+	this.compressed_ri = 0
+	this.compressed_wi = 0
+
+	if (this.dst_y < this.frame_rect_y1) and
+		(this.frame_rect_x0 <> this.frame_rect_x1) and
+		(this.frame_rect_y0 <> this.frame_rect_y1) {
+		return base."#not enough data"
+	}
+}
+
+pri func decoder.copy_to_image_buffer!(pb: ptr base.pixel_buffer, src: slice base.u8) base.status {
+	// TODO: don't assume an interleaved pixel format.
+	var dst             : slice base.u8
+	var src             : slice base.u8
+	var width_in_bytes  : base.u64
+	var n               : base.u64
+	var src_ri          : base.u64
+	var bytes_per_pixel : base.u32[..= 64]
+	var pixfmt_channels : base.u32
+	var tab             : table base.u8
+	var i               : base.u64
+	var j               : base.u64
+	var replicate_y0    : base.u32
+	var replicate_y1    : base.u32
+	var replicate_dst   : slice base.u8
+	var replicate_src   : slice base.u8
+
+	// TODO: a Wuffs (not just C) name for the WUFFS_BASE__PIXEL_FORMAT__ETC
+	// magic pixfmt constants. Also, support more formats.
+	pixfmt_channels = args.pb.pixel_format() & 0xFFFF
+	if (pixfmt_channels == 0x8888) {
+		bytes_per_pixel = 4
+	} else if (pixfmt_channels == 0x0888) {
+		bytes_per_pixel = 3
+	} else if (pixfmt_channels == 0x0008) {
+		bytes_per_pixel = 1
+	} else {
+		return base."#unsupported option"
+	}
+
+	width_in_bytes = (this.width as base.u64) * (bytes_per_pixel as base.u64)
+	tab = args.pb.plane(p: 0)
+	while src_ri < args.src.length() {
+		src = args.src[src_ri ..]
+
+		if this.dst_y >= this.frame_rect_y1 {
+			if this.quirk_enabled_ignore_too_much_pixel_data {
+				return ok
+			}
+			return base."#too much data"
+		}
+
+		// First, copy from src to that part of the frame rect that is inside
+		// args.pb's bounds (clipped to the image bounds).
+
+		dst = tab.row(y: this.dst_y)
+		if this.dst_y >= this.height {
+			dst = dst[.. 0]
+		} else if width_in_bytes < dst.length() {
+			dst = dst[.. width_in_bytes]
+		}
+
+		i = (this.dst_x as base.u64) * (bytes_per_pixel as base.u64)
+		if i < dst.length() {
+			j = (this.frame_rect_x1 as base.u64) * (bytes_per_pixel as base.u64)
+			if (i <= j) and (j <= dst.length()) {
+				dst = dst[i .. j]
+			} else {
+				dst = dst[i ..]
+			}
+			n = this.swizzler.swizzle_interleaved!(
+				dst: dst, dst_palette: this.dst_palette[..], src: src)
+
+			src_ri ~sat+= n
+			this.dst_x ~sat+= (n & 0xFFFFFFFF) as base.u32
+
+			this.dirty_max_excl_y = this.dirty_max_excl_y.max(a: this.dst_y ~sat+ 1)
+		}
+
+		if this.frame_rect_x1 <= this.dst_x {
+			this.dst_x = this.frame_rect_x0
+			if this.interlace == 0 {
+				this.dst_y ~sat+= 1
+				continue
+			}
+
+			// For the first frame of an interlaced, non-transparent GIF,
+			// replicate the early passes' rows. For example, when such an
+			// image is downloaded over a slow network, this produces a richer
+			// intermediate image while waiting for the complete image.
+			//
+			// Some other GIF implementations call this progressive display or
+			// a "Haeberli inspired" technique.
+			if (this.num_decoded_frames_value == 0) and
+				(not this.gc_has_transparent_index) and
+				(this.interlace > 1) {
+
+				replicate_src = tab.row(y: this.dst_y)
+				replicate_y0 = this.dst_y ~sat+ 1
+				replicate_y1 = this.dst_y ~sat+ (interlace_count[this.interlace] as base.u32)
+				replicate_y1 = replicate_y1.min(a: this.frame_rect_y1)
+				while replicate_y0 < replicate_y1 {
+					assert replicate_y0 < 0xFFFFFFFF via "a < b: a < c; c <= b"(c: replicate_y1)
+					replicate_dst = tab.row(y: replicate_y0)
+					replicate_dst.copy_from_slice!(s: replicate_src)
+					replicate_y0 += 1
+				}
+				this.dirty_max_excl_y = this.dirty_max_excl_y.max(a: replicate_y1)
+			}
+
+			this.dst_y ~sat+= interlace_delta[this.interlace] as base.u32
+			while (this.interlace > 0) and (this.dst_y >= this.frame_rect_y1) {
+				this.interlace -= 1
+				this.dst_y = this.frame_rect_y0 ~sat+ interlace_start[this.interlace]
+			}
+			continue
+		}
+
+		if args.src.length() == src_ri {
+			break
+		} else if args.src.length() < src_ri {
+			return "#internal error: inconsistent ri/wi"
+		}
+
+		// Second, skip over src for that part of the frame rect that is
+		// outside args.pb's bounds. This second step should be infrequent.
+
+		// Set n to the number of pixels (i.e. the number of bytes) to skip.
+		n = (this.frame_rect_x1 - this.dst_x) as base.u64
+		n = n.min(a: args.src.length() - src_ri)
+
+		src_ri ~sat+= n
+		this.dst_x ~sat+= (n & 0xFFFFFFFF) as base.u32
+
+		if this.frame_rect_x1 <= this.dst_x {
+			this.dst_x = this.frame_rect_x0
+			this.dst_y ~sat+= interlace_delta[this.interlace] as base.u32
+			while (this.interlace > 0) and (this.dst_y >= this.frame_rect_y1) {
+				this.interlace -= 1
+				this.dst_y = this.frame_rect_y0 ~sat+ interlace_start[this.interlace]
+			}
+			continue
+		}
+
+		if src_ri <> args.src.length() {
+			return "#internal error: inconsistent ri/wi"
+		}
+		break
+	}
+	return ok
+}
