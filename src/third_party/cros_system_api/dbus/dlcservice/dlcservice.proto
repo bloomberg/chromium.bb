@@ -1,0 +1,107 @@
+// Copyright 2018 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package dlcservice;
+
+// This contains info Update Engine needs to update or install a DLC
+// (Downloadable Content) module.
+// https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/dlcservice
+message DlcModuleInfo {
+  // ID of the DLC module.
+  // This has to be set.
+  // dlc_id is used to construct the DLC module install path and Omaha App ID.
+  // Omaha App ID is used to query update from Omaha server. Omaha responds
+  // with payload that corresponds to the App ID based on a preset rule.
+  // Omaha responds with error if the provided App ID does not exist on
+  // Omaha.
+  string dlc_id = 1;
+  // Path to the DLC module content. This parameter should not be used as input.
+  // If passed in with a value set, there will be no effect. Only an output use
+  // parameter.
+  string dlc_root = 2;
+}
+
+// This is the message used in:
+//
+// - The update_engine queries the dlcservice to get the list of available DLCs
+//   to be updated (This is done through a D-Bus signal and restricted to
+//   update_engine only.) The DLC service constructs the list of available DLCs
+//   based on installed DLCs on the stateful partition and returns it to the
+//   update_engine.
+//
+// - The dlcservice sends the list of DLCs it wants to install to the
+//   update_engine (similarly, through a D-Bus signal that is restricted to only
+//   dlcservice.) Optionally dlcservice can pass a custom Omaha URL (for
+//   autotests, QA tests, etc) to download the DLCs from. update_engine checks
+//   the validity of this request and starts the installation process.
+message DlcModuleList {
+  // A list of DLC modules that needs to be installed or updated.
+  repeated DlcModuleInfo dlc_module_infos = 1;
+  // Omaha URL to query for update. Only used when trying to force the
+  // update_engine to download the DLC payloads from a specific address.
+  string omaha_url = 2;
+}
+
+// This message is used to query the DLCs that have data on disk. This allows
+// Chrome UI to show this list to the users and users can decide whether to
+// delete unused DLCs or not.
+message DlcsWithContent {
+  message DlcInfo {
+    // The unique ID of the DLC.
+    string id = 1;
+    // The human readable name of the DLC.
+    string name = 2;
+    // The human readable description of the DLC.
+    string description = 3;
+    // The amount of disk space used by this DLC (bytes).
+    uint64 used_bytes_on_disk = 4;
+  }
+  // The list of DLCs that have used disk space.
+  repeated DlcInfo dlc_infos = 1;
+}
+
+// This is the message that is returned from DLC Service via |GetState| method
+// and indicates what state a DLC is in.
+// TODO(crbug.com/1056269): Propagate error code as well to know reason for
+// failure when state is |NOT_INSTALLED|.
+message DlcState {
+  // This is the message that indicates what state a DLC is in.
+  enum State {
+    NOT_INSTALLED = 0;
+    INSTALLING = 1;
+    INSTALLED = 2;
+  }
+  State state = 1;
+}
+
+// TODO(crbug.com/1071260): Deprecate Status
+// This is the message that indicates how the install progress is running and
+// dlcservice will always end with |COMPLETE| or |FAILED| when finished.
+enum Status {
+  COMPLETED = 0;
+  RUNNING = 1;
+  FAILED = 2;
+}
+
+// This message is sent from DLC Service via OnInstallStatus signal.
+// Throughout the install progress, dlcservice will signal out this message.
+message InstallStatus {
+  // TODO(crbug.com/1071260): Deprecate dlc_module_list.
+  DlcModuleList dlc_module_list = 1;
+  string error_code = 2;
+  // TODO(crbug.com/1071260): Deprecate status.
+  Status status = 3;
+  double progress = 4;
+
+  // The current state of dlcservice.
+  enum State {
+    IDLE = 0;
+    INSTALLING = 1;
+  }
+  State state = 5;
+}

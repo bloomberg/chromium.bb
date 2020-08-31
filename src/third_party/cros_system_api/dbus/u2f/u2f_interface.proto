@@ -1,0 +1,109 @@
+// Copyright 2019 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+option optimize_for = LITE_RUNTIME;
+
+package u2f;
+
+// UserNotification signal payload.
+message UserNotification {
+  enum EventType {
+    // This event is periodically sent when confirming physical presence is
+    // required for the integrated U2F device. In response, the UI should
+    // start/continue showing the 'touch powerbutton' user prompt.
+    TOUCH_NEEDED = 0;
+  }
+  EventType event_type = 1;
+}
+
+enum VerificationType {
+  VERIFICATION_UNKNOWN = 0;
+  VERIFICATION_USER_PRESENCE = 1;
+  VERIFICATION_USER_VERIFICATION = 2;
+}
+
+message MakeCredentialRequest {
+  VerificationType verification_type = 1;
+  // String representing a valid domain name.
+  string rp_id = 2;
+  // Whether to store as a resident credential. Currently not implemented.
+  bool resident_credential = 3;
+  // Resident credentials not implemented yet; this field will be ignored.
+  bytes user_entity = 4;
+}
+
+message MakeCredentialResponse {
+  enum MakeCredentialStatus {
+    UNKNOWN = 0;
+    SUCCESS = 1;
+    VERIFICATION_FAILED = 2;
+    VERIFICATION_TIMEOUT = 3;
+    INVALID_REQUEST = 4;
+    INTERNAL_ERROR = 5;
+  }
+
+  MakeCredentialStatus status = 1;
+
+  // Attestation object for newly created credential.
+  //
+  // See https://www.w3.org/TR/webauthn/#attestation-object for details
+  // on the format of these fields.
+  //
+  // Note that currently only 'none' attestation is supported.
+
+  // Includes the newly created credential ID and public key.
+  bytes authenticator_data = 2;
+
+  // Use of 'none' attestation means these fields always have values of "none"
+  // and "\xa0" respectively.
+  string attestation_format = 3;
+  bytes attestation_statement = 4;
+}
+
+message GetAssertionRequest {
+  VerificationType verification_type = 1;
+  // String representing a valid domain name.
+  string rp_id = 2;
+  // SHA-256 hash of client data.
+  bytes client_data_hash = 3;
+  // Currently must not be empty; resident credentials not implemented yet.
+  repeated bytes allowed_credential_id = 4;
+}
+
+message Assertion {
+  bytes credential_id = 1;
+  bytes authenticator_data = 2;
+  bytes signature = 3;
+  // Resident credentials not imlemented yet; this field is always empty.
+  bytes user_entity = 4;
+}
+
+message GetAssertionResponse {
+  enum GetAssertionStatus {
+    UNKNOWN = 0;
+    SUCCESS = 1;
+    VERIFICATION_FAILED = 2;
+    VERIFICATION_TIMEOUT = 3;
+    INVALID_REQUEST = 4;
+    INTERNAL_ERROR = 5;
+  }
+
+  GetAssertionStatus status = 1;
+  repeated Assertion assertion = 2;
+}
+
+// Check whether the specified |credential_id|s are valid given |rp_id|. Invalid
+// credentials will not be present in the response. If no |credential_id|s are
+// specified, returns any resident credentials for |rp_id|.
+message HasCredentialsRequest {
+  // String representing a valid domain name.
+  string rp_id = 1;
+  repeated bytes credential_id = 2;
+}
+
+message HasCredentialsResponse {
+  // Valid or resident credentials for the specified rp_id.
+  repeated bytes credential_id = 1;
+}

@@ -1,0 +1,234 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// The messages in this file comprise the DBus/Protobuf interface for
+// Runtime Probe.
+syntax = "proto3";
+
+package runtime_probe;
+option go_package = "runtime_probe_proto";
+
+// Defined error code.
+enum ErrorCode {
+  // 0 is the default value of ProbeResult::error. It should never be used.
+  RUNTIME_PROBE_ERROR_NOT_SET = 0;
+
+  // Not able to read the ProbeResult as DBus signature indicated.
+  RUNTIME_PROBE_ERROR_PROBE_REQUEST_INVALID = 1;
+  // Not able to find default probe config in the rootfs image.
+  RUNTIME_PROBE_ERROR_DEFAULT_PROBE_CONFIG_NOT_FOUND = 2;
+  // Assigned probe config is not holding a corret JSON format.
+  RUNTIME_PROBE_ERROR_PROBE_CONFIG_SYNTAX_ERROR = 3;
+  // Assigned probe config contains functions not able to be constructed.
+  RUNTIME_PROBE_ERROR_PROBE_CONFIG_INCOMPLETE_PROBE_FUNCTION = 4;
+}
+
+// Request from client that indicates what categories to probe. Category must
+// be existed on the per-board probe statement in rootfs.
+message ProbeRequest {
+  // Next tag: 5
+  enum SupportCategory {
+    // The name style here is on purposely align with factory probe output.
+    audio_codec = 0;
+    battery = 1;
+    storage = 2;
+    vpd_cached = 3;
+    network = 4;
+  }
+  repeated SupportCategory categories = 1;
+  // This option allows clients to retrieve data with privacy implication from
+  // D-Bus call to runtime_probe. Default to false and please use with caution.
+  bool include_privacy_fields = 2;
+  // If probe_default_category is True, the supplied categories above will be
+  // ignored.
+  bool probe_default_category = 3;
+}
+
+// Things about audio_codec
+message AudioCodec {
+  message Fields {
+    // The name of the codec presents in sysfs.
+    string name = 1;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
+// Things about battery
+message Battery {
+  // TODO(itspeter): Add more fileds for battery.
+  message Fields {
+    // (1) Most fields are following the naming of exposed ACPI interface.
+    // (2) Most units is in µ because of this unexplained kernel patch:
+    // https://chromium.git.corp.google.com/chromiumos/third_party/kernel/+/d7380965752505951668e85de59c128d1d6fd21f%5E%21/#F1
+
+    // Index number of this battery, starts from 1.
+    int32 index = 1;
+    // Manufacturer for length not exceeding EC_COMM_TEXT_MAX.
+    string manufacturer = 2;
+    // Model name for length not exceeding EC_COMM_TEXT_MAX.
+    string model_name = 3;
+    // Serial number for length not exceeding EC_COMM_TEXT_MAX.
+    string serial_number = 4;
+    // Design Capacity (µAh).
+    int32 charge_full_design = 5;
+    // Full Capacity (µAh, might change occasionally).
+    int32 charge_full = 6;
+    // Remaining capacity (µAh)
+    int32 charge_now = 7;
+    // Current Battery voltage (µV)
+    int32 voltage_now = 8;
+    // Designed minimum output voltage (µV)
+    int32 voltage_min_design = 9;
+    // Smart Battery Cycle Count in http://sbs-forum.org/specs/sbdat110.pdf
+    int32 cycle_count_smart = 10;
+    // Smart Battery Status defined in http://sbs-forum.org/specs/sbdat110.pdf
+    int32 status_smart = 11;
+    // Temperature in 0.1°K as Smart Battery Temperature defined in
+    // http://sbs-forum.org/specs/sbdat110.pdf
+    int32 temperature_smart = 12;
+    // The path of this battery in system. It is useful if caller needs to
+    // correlate with other information
+    string path = 13;
+    // Smart Manufacture Date is defined in
+    // http://sbs-forum.org/specs/sbdat110.pdf.
+    // The value is calculated by ((year-1980) * 512 + month * 32 + day).
+    int32 manufacture_date_smart = 14;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
+// Things about storage
+message Storage {
+  message Fields {
+    // The path of this storage in system. It is useful if caller needs to
+    // correlate with other information.
+    string path = 1;
+    // Number of sectors of this storage, traditionally 1 sector = 512 Bytes.
+    int64 sectors = 2;
+    // Exact size of this storage, reported in bytes
+    int64 size = 3;
+    // Storage type, could be MMC / NVMe / ATA
+    string type = 4;
+
+    // Below are based on JEDEC Standard No. 84-B51, and kernel MMC driver
+    // exposed in sysfs:
+    //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v3.18/include/linux/mmc/card.h#17
+    //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v3.18/Documentation/mmc/mmc-dev-attrs.txt
+
+    // MID: Manufacturer ID, 8 bits.
+    uint32 manfid = 5;
+    // PNM: Product name, ASCII characters for 6 bytes.
+    string name = 6;
+    // PRV: Product revision, 8 bits
+    uint32 prv = 7;
+    // PSN: Product serial number, 32 bits
+    uint32 serial = 8;
+    // OID: OEM/Application ID, 8 bits
+    uint32 oemid = 9;
+
+    // The following are fields for NVMe. Every field name comes with
+    // prefix "pci_" as NVMe is a PCI device.
+    // These fields are based on what kernel pci driver exposes in sysfs:
+    //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v4.4/include/linux/pci.h#267
+
+    // Vendor ID, 16 bits
+    uint32 pci_vendor = 10;
+    // Device ID, 16 bits
+    uint32 pci_device = 11;
+    // Device class indicator, 32 bits
+    uint32 pci_class = 12;
+
+    // The following are fields for SATA. Every field name comes with
+    // prefix "ata_".
+    // These fields based on what kernel pci driver exposes in sysfs:
+    //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v4.4/drivers/scsi/scsi_devinfo.c#22
+
+    // Vendor name, 8 bytes
+    string ata_vendor = 13;
+    // Model name, 16 bytes
+    string ata_model = 14;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
+// Things about VPD (Vital Product Data) , cached version.
+message VpdCached {
+  // TODO(itspeter): Add more fileds for Vpd.
+  message Fields {
+    // Allowed VPD fileds are reviewed on https://b/131849646
+    // Up to date documentation on VPD fields for each Chromebook is on
+    //   https://www.google.com/chromeos/partner/fe/docs/factory/vpd.html
+
+    // SKU number of the unit
+    string vpd_sku_number = 1;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
+// Things about network
+message Network {
+  message Fields {
+    // The path of this network in system. It is useful if caller needs to
+    // correlate with other information.
+    string path = 1;
+    // Network type, could be wireless / ethernet / cellular
+    string type = 2;
+    // Network bus, could be pci / usb / sdio
+    string bus_type = 3;
+
+    // The following are fields for PCI. Every field name comes with
+    // prefix "pci_".
+    // These fields are based on what kernel pci driver exposes in sysfs:
+    //   https://chromium.googlesource.com/chromiumos/third_party/kernel/+/v4.4/include/linux/pci.h#267
+
+    // Vendor ID, 16 bits
+    uint32 pci_vendor_id = 4;
+    // Device ID, 16 bits
+    uint32 pci_device_id = 5;
+    // Device revision, 8 bits
+    uint32 pci_revision = 6;
+
+    // The following are fields for USB. Every field name comes with
+    // prefix "usb_".
+
+    // Vendor ID, 16 bits
+    uint32 usb_vendor_id = 7;
+    // Product ID, 16 bits
+    uint32 usb_product_id = 8;
+    // Device Release Number, 16 bits.
+    uint32 usb_bcd_device = 9;
+
+    // The following are fields for SDIO. Every field name comes with
+    // prefix "sdio_".
+
+    // Vendor ID, 16 bits
+    uint32 sdio_vendor_id = 10;
+    // Product ID, 16 bits
+    uint32 sdio_device_id = 11;
+  }
+  string name = 1;    // Component alias
+  Fields values = 2;  // Component's details
+}
+
+// A ProbeResult contains all potential probe results. For category not
+// existed or not requested for probing, field is expected to be empty.
+// Next tag: 8
+message ProbeResult {
+  // If a call was successful, error will not be defined.
+  // If a call failed, it must set an error code.
+  ErrorCode error = 1;
+  // The checksum of probe config content calculated using SHA1 hash.
+  string probe_config_checksum = 6;
+
+  // The following are the fields for different component categories.
+  repeated AudioCodec audio_codec = 2;
+  repeated Battery battery = 3;
+  repeated Storage storage = 4;
+  repeated VpdCached vpd_cached = 5;
+  repeated Network network = 7;
+}
