@@ -1,0 +1,12 @@
+[
+  {
+    "cmd": [
+      "echo",
+      "linux-386"
+    ],
+    "name": "platform_suffix"
+  },
+  {
+    "name": "$result"
+  }
+]

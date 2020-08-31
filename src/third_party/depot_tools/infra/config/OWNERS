@@ -1,0 +1,7 @@
+set noparent
+iannucci@chromium.org
+nodir@chromium.org
+
+per-file recipes.cfg=martiniss@chromium.org
+per-file recipes.cfg=recipe-mega-autoroller@chops-service-accounts.iam.gserviceaccount.com
+

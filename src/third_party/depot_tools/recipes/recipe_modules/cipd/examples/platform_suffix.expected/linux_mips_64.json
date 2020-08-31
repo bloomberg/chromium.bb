@@ -1,0 +1,12 @@
+[
+  {
+    "cmd": [
+      "echo",
+      "linux-mips64"
+    ],
+    "name": "platform_suffix"
+  },
+  {
+    "name": "$result"
+  }
+]
