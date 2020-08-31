@@ -1,0 +1,13 @@
+Name: six
+Short Name: six
+URL: https://github.com/benjaminp/six/releases/tag/1.12.0
+Version: 1.12.0
+Revision: d927b9e27617abca8dbf4d66cc9265ebbde261d6
+License: Apache License, Version 2.0
+
+Description:
+Six is a Python 2 and 3 compatibility library.
+
+Local Modifications:
+- Copied six.py as __init__.py.
+- Kept LICENSE and README.rst.

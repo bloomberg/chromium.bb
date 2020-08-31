@@ -1,0 +1,14 @@
+Name: scandir
+Short Name: scandir
+URL: https://github.com/benhoyt/scandir
+Revision: 982e6ba60e7165ef965567eacd7138149c9ce292 / v1.10.0
+License: BSD 3-Clause "New" or "Revised" License
+
+Description:
+Better directory iterator and faster os.walk()
+
+Local Modifications:
+- rm -rf test
+- rm *.yml build.cmd MANIFEST.in _scandir.c setup.py tox.ini benchmark.py \
+  *.h .git*
+- touch __init__.py

@@ -1,0 +1,16 @@
+Name: infra_libs
+Short Name: infra_libs
+URL: https://chromium.googlesource.com/infra/infra/+/master/packages/infra_libs/infra_libs/
+Revision: a04192cb5189c6fc7310e25a4ef5cace789791d3
+License: Chromium License
+
+Description:
+Common libraries used by Chrome Infrastructure.
+
+Please roll in sync with appengine/third_party/gae_{ts,event}_mon.
+You may want to roll infra_libs in infra.git first, to make sure they
+are at compatible at the version you need.
+
+Local Modifications:
+- Copied LICENSE from the root of infra.git.
+- removed files for tests.
