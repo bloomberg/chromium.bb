@@ -1,0 +1,2 @@
+dEQP-VK.wsi.xlib.swapchain.acquire.too_many
+dEQP-VK.wsi.xlib.swapchain.acquire.too_many_timeout
