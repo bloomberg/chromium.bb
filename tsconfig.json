@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "front_end/",
+    "test/"
+  ],
+  "exclude": [
+    "front_end/externs.js"
+  ]
+}
