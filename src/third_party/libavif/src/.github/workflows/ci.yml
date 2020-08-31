@@ -1,0 +1,53 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    env:
+      CC: gcc-8
+      CXX: g++-8
+    steps:
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    - name: Install nasm
+      env:
+        LINK: http://debian-archive.trafficmanager.net/debian/pool/main/n/nasm
+        NASM_VERSION: 2.14.02-1
+        NASM_SHA256: >-
+          5225d0654783134ae616f56ce8649e4df09cba191d612a0300cfd0494bb5a3ef
+      run: |
+        curl -O "$LINK/nasm_${NASM_VERSION}_amd64.deb"
+        echo "$NASM_SHA256 nasm_${NASM_VERSION}_amd64.deb" | sha256sum --check
+        sudo dpkg -i "nasm_${NASM_VERSION}_amd64.deb"
+    - name: Install dependencies
+      run: |
+        DEBIAN_FRONTEND=noninteractive sudo apt-get update
+        DEBIAN_FRONTEND=noninteractive sudo apt-get install -y ninja-build gcc-8 g++-8
+        pip install --upgrade pip
+        pip install setuptools
+        pip install meson
+    - uses: actions/checkout@v2
+    - name: Setup aom
+      working-directory: ./ext
+      run: bash aom.cmd
+    - name: Setup dav1d
+      working-directory: ./ext
+      run: bash dav1d.cmd
+    - name: Setup rav1e
+      working-directory: ./ext
+      run: bash rav1e.cmd
+    - name: Setup libgav1
+      working-directory: ./ext
+      run: bash libgav1.cmd
+    - name: Prepare libavif (cmake)
+      run: |
+        mkdir build && cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DAVIF_CODEC_AOM=ON -DAVIF_LOCAL_AOM=ON -DAVIF_CODEC_DAV1D=ON -DAVIF_LOCAL_DAV1D=ON -DAVIF_CODEC_RAV1E=ON -DAVIF_LOCAL_RAV1E=ON -DAVIF_CODEC_LIBGAV1=ON -DAVIF_LOCAL_LIBGAV1=ON -DAVIF_BUILD_TESTS=1
+    - name: Build libavif (make)
+      working-directory: ./build
+      run: make -j $(($(nproc) + 1))
+    - name: Run AVIF Tests
+      working-directory: ./build
+      run: ./aviftest ../tests/data
