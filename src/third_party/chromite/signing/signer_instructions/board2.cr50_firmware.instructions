@@ -1,0 +1,5 @@
+[insns]
+keyset = stumpy-mp-v3
+target = Unchanged
+output_names = cr50_@VERSION@_@TARGET@_@KEYSET@
+ensure_no_password = true

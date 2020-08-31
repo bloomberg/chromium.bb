@@ -1,0 +1,8 @@
+# Only allow the security team to approve changes to the user/group baseline.
+per-file usergroup_baseline.py = set noparent
+
+# TODO(crbug.com/996700): Use
+# chromiumos/overlays/eclass-overlay:profiles/base/accounts/OWNERS.security
+# here once the 'file' directive works across projects.
+per-file usergroup_baseline.py = allenwebb@chromium.org, jorgelo@chromium.org
+per-file usergroup_baseline.py = mnissler@chromium.org, vapier@chromium.org

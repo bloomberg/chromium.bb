@@ -1,0 +1,10 @@
+{
+  "build_target": {
+    "name": "%(build_target)s"
+  },
+  "uri": "gs://chromeos-prebuilt/board/%(build_target)s/postsubmit-R77-12271.0.0-7775-8910709858450730096/packages/",
+  "sysroot": {
+    "path": "/build/%(build_target)s"
+  },
+  "package_index_files": []
+}

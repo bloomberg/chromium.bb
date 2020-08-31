@@ -1,0 +1,32 @@
+{
+    "tgt_signed_image": {
+        "build": {
+            "build_target": {
+                "name": "grunt"
+            },
+            "version": "12499.42.0",
+            "bucket": "chromeos-releases",
+            "channel": "dev-channel"
+        },
+        "image_type": 6,
+        "key": "mp-v5"
+    },
+
+    "src_signed_image": {
+        "build": {
+            "build_target": {
+                "name": "grunt"
+            },
+            "version": "11021.17.0",
+            "bucket": "chromeos-releases",
+            "channel": "dev-channel"
+        },
+        "image_type": 6,
+        "key": "premp-v4"
+    },
+
+    "bucket": "chromeos-releases-test",
+    "verify": true,
+    "keyset": "update_signer",
+    "dryrun": false
+  }

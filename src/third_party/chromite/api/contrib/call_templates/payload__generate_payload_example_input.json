@@ -1,0 +1,32 @@
+{
+    "tgt_unsigned_image": {
+        "build": {
+            "build_target": {
+                "name": "grunt"
+            },
+            "version": "12499.42.0",
+            "bucket": "chromeos-releases",
+            "channel": "dev-channel"
+        },
+        "image_type": 6,
+        "milestone": "R78"
+    },
+
+    "src_unsigned_image": {
+        "build": {
+            "build_target": {
+                "name": "grunt"
+            },
+            "version": "11021.17.0",
+            "bucket": "chromeos-releases",
+            "channel": "dev-channel"
+        },
+        "image_type": 6,
+        "milestone": "R70"
+    },
+
+    "bucket": "chromeos-releases-test",
+    "verify": true,
+    "keyset": "update_signer",
+    "dryrun": false
+}

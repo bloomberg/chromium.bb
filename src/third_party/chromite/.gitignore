@@ -1,0 +1,32 @@
+# Generated files
+*.py[co]
+__pycache__
+*~
+*.swp
+.project
+.pydevproject
+.mypy_cache
+
+# source cross-reference files.
+tags
+.ctags
+cscope.out
+
+# Chromite virtualenv.
+*.egg-info/
+
+# Local eng changes to text editor config shouldn't show up in `git status`
+# and shouldn't be git add-able unless explictly running `git add -f file`
+/.dir-locals.el
+/.idea/
+/.exrc
+/.nvimrc
+/.vimrc
+/.vscode/
+
+# CIPD installed binaries.
+/.cipd_bin/
+
+# Obsolete
+/virtualenv/
+/.venv/

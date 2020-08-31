@@ -1,0 +1,11 @@
+{
+  "build_target": {
+    "name": "%(build_target)s"
+  },
+  "image": {
+    "path": "/mnt/host/source/src/build/images/%(build_target)s/latest"
+  },
+  "result": {
+    "directory": "/tmp"
+  }
+}

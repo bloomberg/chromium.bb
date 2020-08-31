@@ -1,0 +1,6 @@
+{
+  "build_target": "%(build_target)s",
+  "private": true,
+  "key": 1,
+  "uri": "gs://chromeos-prebuilt/board/%(build_target)s/postsubmit-R77-12271.0.0-7775-8910709858450730096/packages/"
+}
