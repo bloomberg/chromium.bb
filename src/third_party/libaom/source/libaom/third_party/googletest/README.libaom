@@ -1,0 +1,17 @@
+URL: https://github.com/google/googletest
+Version: 1.10.x
+License: BSD
+License File: LICENSE
+
+Description:
+Google's framework for writing C++ tests on a variety of platforms
+(Linux, Mac OS X, Windows, Windows CE, Symbian, etc).  Based on the
+xUnit architecture.  Supports automatic test discovery, a rich set of
+assertions, user-defined assertions, death tests, fatal and non-fatal
+failures, various options for running the tests, and XML test report
+generation.
+
+Local Modifications:
+- Replace everything in:
+  third_party/googletest/src/googletest/src/
+  third_party/googletest/src/googletest/include/
